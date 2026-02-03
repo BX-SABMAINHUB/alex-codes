@@ -2,42 +2,84 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Key Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Claves - Alex Hub</title>
     <style>
-        body { background: #000; color: #0dff00; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .box { border: 2px solid #0dff00; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(13, 255, 0, 0.2); text-align: center; }
-        #key { font-size: 60px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; color: #fff; }
-        .info { font-size: 14px; color: #888; margin-top: 10px; }
-    </script>
+        body {
+            background-color: #050505;
+            color: #0dff00;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            border: 2px solid #0dff00;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(13, 255, 0, 0.1);
+        }
+        h1 { font-size: 1.2rem; letter-spacing: 3px; color: #888; }
+        #key {
+            font-size: 80px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #fff;
+            text-shadow: 0 0 10px #0dff00;
+        }
+        .status { font-size: 0.9rem; color: #444; }
+        .timer { color: #ff3b30; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <div class="box">
-        <div style="letter-spacing: 2px;">CONTRASEÑA ACTUAL</div>
+
+    <div class="container">
+        <h1>ACCESS TOKEN</h1>
         <div id="key">------</div>
-        <div class="info" id="timer">Cargando...</div>
+        <p class="status">Esta clave cambia automáticamente cada hora.</p>
+        <p class="status">Válida hasta las: <span id="next-hour" class="timer">--:00</span></p>
     </div>
 
     <script>
-        function generatePass() {
+        function generateHourlyCode() {
             const now = new Date();
-            // Semilla basada en Año + Mes + Día + Hora (cambia cada hora exacta)
-            const seed = now.getFullYear().toString() + now.getMonth().toString() + now.getDate().toString() + now.getHours().toString();
+            // Creamos la semilla basada en la fecha y la hora (ej: 2024101514)
+            const seed = now.getFullYear().toString() + 
+                         (now.getMonth() + 1).toString() + 
+                         now.getDate().toString() + 
+                         now.getHours().toString();
+            
+            // Caracteres: Letras Mayus, Minus, Números y Signos
             const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
             let result = '';
-            let seedNum = 0;
+            
+            // Algoritmo de generación sincronizado
+            let hash = 0;
             for (let i = 0; i < seed.length; i++) {
-                seedNum = ((seedNum << 5) - seedNum) + seed.charCodeAt(i);
-                seedNum |= 0;
+                hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+                hash |= 0;
             }
+
             for (let i = 0; i < 6; i++) {
-                seedNum = (seedNum * 16807) % 2147483647;
-                result += chars.charAt(seedNum % chars.length);
+                hash = (hash * 16807) % 2147483647;
+                result += chars.charAt(Math.abs(hash) % chars.length);
             }
+
+            // Mostrar en pantalla
             document.getElementById('key').innerText = result;
-            document.getElementById('timer').innerText = "Válida hasta las " + (now.getHours() + 1) + ":00";
+            
+            // Mostrar próxima expiración
+            let next = now.getHours() + 1;
+            document.getElementById('next-hour').innerText = (next < 10 ? '0' + next : next) + ":00";
         }
-        generatePass();
-        setInterval(generatePass, 30000); // Refresca cada 30 seg
+
+        // Ejecutar al cargar y actualizar cada 30 segundos
+        generateHourlyCode();
+        setInterval(generateHourlyCode, 30000);
     </script>
 </body>
 </html>
