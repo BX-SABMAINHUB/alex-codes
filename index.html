@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Key Generator</title>
+    <style>
+        body { background: #000; color: #0dff00; font-family: 'Courier New', monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .box { border: 2px solid #0dff00; padding: 30px; border-radius: 15px; box-shadow: 0 0 20px rgba(13, 255, 0, 0.2); text-align: center; }
+        #key { font-size: 60px; font-weight: bold; letter-spacing: 5px; margin: 20px 0; color: #fff; }
+        .info { font-size: 14px; color: #888; margin-top: 10px; }
+    </script>
+</head>
+<body>
+    <div class="box">
+        <div style="letter-spacing: 2px;">CONTRASEÑA ACTUAL</div>
+        <div id="key">------</div>
+        <div class="info" id="timer">Cargando...</div>
+    </div>
+
+    <script>
+        function generatePass() {
+            const now = new Date();
+            // Semilla basada en Año + Mes + Día + Hora (cambia cada hora exacta)
+            const seed = now.getFullYear().toString() + now.getMonth().toString() + now.getDate().toString() + now.getHours().toString();
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";
+            let result = '';
+            let seedNum = 0;
+            for (let i = 0; i < seed.length; i++) {
+                seedNum = ((seedNum << 5) - seedNum) + seed.charCodeAt(i);
+                seedNum |= 0;
+            }
+            for (let i = 0; i < 6; i++) {
+                seedNum = (seedNum * 16807) % 2147483647;
+                result += chars.charAt(seedNum % chars.length);
+            }
+            document.getElementById('key').innerText = result;
+            document.getElementById('timer').innerText = "Válida hasta las " + (now.getHours() + 1) + ":00";
+        }
+        generatePass();
+        setInterval(generatePass, 30000); // Refresca cada 30 seg
+    </script>
+</body>
+</html>
